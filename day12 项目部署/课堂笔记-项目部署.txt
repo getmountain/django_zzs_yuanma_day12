@@ -1,0 +1,395 @@
+项目部署，本质：
+	- 电脑代码 -> 服务器
+	- 服务器配置
+	- 启动
+
+1.代码的上传
+	本机git      -> 代码仓库       -> 服务器拉取
+
+	1.1 代码仓库，创建仓库
+
+	2.2 本机推送代码
+		git add .
+		git commit -m 'xxx'
+		git push origin master
+
+		- 问题：有些文件不需要推送，.gitignore 文件
+		- 问题：本地配置和线上配置（数据库连接）local_settings.py
+
+	2.3 每次push代码到仓库时，都需要输入密码。
+		- 方式1：
+			https://wupeiqi:xxxxxxxx@gitee.com/wupeiqi/day06.git
+
+			git remote remove origin
+			git remote add origin https://wupeiqi:xxxxxxxx@gitee.com/wupeiqi/day06.git
+			git push origin master
+
+		- 方式2：秘钥（自己电脑）
+			- 工具生成：公钥、私钥
+				- mac内置
+				- win利用git bash
+			- 将公钥拷贝到代码仓库平台，gitee/github/gitlab
+			
+			- 基于ssh连接
+				git remote remove origin
+				git remote add origin git@gitee.com:wupeiqi/day06.git
+				git push origin master
+
+	-----答疑-----
+		git remote add v1 git@gitee.com:wupeiqi/day06.git
+		git remote add v2 git@github.com:wupeiqi/day06.git
+		git push v1 master
+		git push v2 master
+
+		电脑凭证/钥匙串
+
+
+2.服务器下载代码
+	- web界面登录，执行下载命令
+		yum install git -y
+		git clone https://gitee.com/wupeiqi/day06.git
+
+
+		- 生成：公钥、私钥
+		- 公钥拷贝代码仓库
+		- git命令
+			git clone git@gitee.com:wupeiqi/day06.git
+
+	- SSH工具连接远程服务器 + 执行下载命令
+		- win：git bash、xshell
+		- mac：iTerm2
+
+	  - 用户名和密码登录
+	  	 ssh root@82.156.54.134
+	  	 输入密码
+
+	  - 秘钥免密登录（自己电脑）
+	  	  - 生成公钥和私钥-已操作
+	  	  - 公钥上传到服务器 82.156.54.134
+	  	  		ssh-copy-id  -i ~/.ssh/id_rsa.pub  root@82.156.54.134
+	  	  		输入密码
+	  	  - 后续再登录
+	  	  	ssh root@82.156.54.134
+
+
+3.代码运行起来
+	centos操作系统
+
+	3.1 MySQL
+		安装
+			yum install mariadb-server -y
+			yum install mariadb -y
+		启动
+			systemctl enable mariadb
+
+			systemctl start mariadb
+			systemctl stop mariadb
+
+		项目配置
+			- 创建用户
+				insert into mysql.user(user,host,password) values('wangchuan','%',password('qwe123..'));
+			- 创建数据库
+				CREATE DATABASE day06db DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+
+			- 用户+数据库授权
+				grant all privileges on day06db.* to 'wangchuan'@'%';
+				flush privileges;
+
+			insert into mysql.user(user,host,password) values('wangchuan','127.0.0.1',password('qwe123..'));
+			grant all privileges on day06db.* to wangchuan@'127.0.0.1';
+			flush privileges;
+
+		后续连接项目数据库：
+			- wangchuan
+			- qwe123..
+			- day06db
+
+			DATABASES = {
+			    'default': {
+			        'ENGINE': 'django.db.backends.mysql',
+			        'NAME': 'day06db',  # 数据库名字
+			        'USER': 'wangchuan',
+			        'PASSWORD': 'qwe123..',
+			        'HOST': '127.0.0.1',  # ip
+			        'PORT': 3306,
+			    }
+			}
+
+	3.2 redis
+		安装
+			yum install redis -y
+
+		配置  /etc/redis.conf
+
+			打开文件
+				vim /etc/redis.conf
+
+			寻找
+				?requirepass
+
+			进入编辑状态
+				requirepass qwe123456
+
+			点击ESC退出编辑状态
+
+			保存并退出
+				:wq
+
+		启动
+			systemctl enable redis
+
+			systemctl start redis
+			systemctl stop redis
+
+
+		目前：只支持本机连
+			bind 127.0.0.1
+			requirepass qwe123456
+
+		想要任何地方连接：
+			bind 0.0.0.0
+			requirepass qwe123456
+			安全组配置6379端口
+
+	3.3 安装Python3.9.5
+		- 安装依赖
+		- 安装gcc
+		- 下载python源码
+		- 编译 & 安装
+
+	3.4 创建虚拟环境
+		pip3 install virtualenv
+
+		mkdir /envs
+		virtualenv /envs/day06 --python=python3.9
+
+	3.5 上传代码&下载代码&安装第三方模块
+
+		- 上传代码时：
+			pip freeze > requirements.txt
+			提交代码
+
+		- 下载代码
+			mkdir /data
+			cd /data
+
+			mkdir www
+			cd /www
+
+			pwd
+				/data/www
+
+			git clone git@gitee.com:wupeiqi/day06.git
+
+		- 安装第三方模块
+			- 激活虚拟环境
+				source /envs/day01/bin/activate
+
+			- 进入项目目录
+
+			- 安装
+				pip install -r requirements.txt
+
+
+		Linux操作系统：
+			envs
+				- day06       ->环境
+			data
+				- www
+					- day06   -> 代码
+
+			cd /envs/day06/
+			cd /data/www/
+
+	3.6 /data/www/day06/day06/local_settings.py
+
+		DEBUG = False
+		ALLOWED_HOSTS = ["*"]
+
+		DATABASES = {
+		    'default': {
+				'ENGINE': 'django.db.backends.mysql',
+		        'NAME': 'day06db',  # 数据库名字
+		        'USER': 'wangchuan',
+		        'PASSWORD': 'qwe123..',
+		        'HOST': '127.0.0.1',  # ip
+		        'PORT': 3306,
+		    }
+		}
+
+		# cache缓存
+		CACHES = {
+		    "default": {
+		        "BACKEND": "django_redis.cache.RedisCache",
+		        "LOCATION": "redis://127.0.0.1:6379",
+		        "OPTIONS": {
+		            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+		            "CONNECTION_POOL_KWARGS": {"max_connections": 100},
+		            "PASSWORD": "qwe123456",
+		        }
+		    }
+		}
+
+
+		# 关于静态资源，后续希望将django中每个app中所有的静态资源收集至此 -> nginx -> 静态文件在哪里
+		# STATIC_ROOT = "/data/xxxxx"
+
+		import os
+		from pathlib import Path
+		BASE_BASE_DIR = Path(__file__).resolve().parent.parent.parent
+		STATIC_ROOT = os.path.join(BASE_BASE_DIR, "allstatic")
+
+
+
+		>>>touch local_settings.py
+		>>>vim local_settings.py
+		粘贴
+		:wq
+
+	3.7 收集静态资源
+		source /envs/day06/bin/activate
+		python manage.py collectstatic
+
+		注意：后续静态资源有变动时，需要重新收集。
+
+	3.8 uwsgi
+		
+		安装：
+			source /envs/day06/bin/activate
+			pip install uwsgi
+
+		命令运行：
+			cd /data/www/day06
+			uwsgi --http :80 --chdir /data/www/day06/ --wsgi-file day06/wsgi.py --master --processes 1 --static-map static=/data/www/allstatic/
+
+		文件形式 uwsgi_day06.ini
+			[uwsgi]
+			http = 0.0.0.0:80
+			chdir = /data/www/day06/
+			wsgi-file = day06/wsgi.py
+			processes = 1
+			static-map = /static=/data/www/allstatic
+			virtualenv = /envs/day06/
+
+			uwsgi --ini  uwsgi_day06.ini
+
+		-------------------------------------------------
+		文件形式 uwsgi_day06.ini
+		[uwsgi]
+		socket = 127.0.0.1:8001
+		chdir = /data/www/day06/
+		wsgi-file = day06/wsgi.py
+		processes = 1
+		virtualenv = /envs/day06/
+
+		uwsgi --ini  uwsgi_day06.ini &
+
+	3.9 nginx
+		安装
+			yum install nginx -y
+
+		配置文件
+			/etc/nginx/nginx.conf
+
+		启动nginx
+			systemctl start nginx
+
+	3.10 shell脚本，自动实现重启等功能(shell命令)
+
+		- reboot.sh
+		- stop.sh
+
+	3.11 数据库处理
+		 登录线上服务器
+		 	python manage.py makemigrations
+		 	python manage.py migrate
+
+		 在.gitignore中
+		 	# database migrations
+			*/migrations/*.py
+			!*/migrations/__init__.py
+
+		原因：redis配置没有重启。
+		问题：关于应该尽可能的去避免。
+
+	3.12 域名
+		- 租域名
+		- 域名解析
+			域名   ->   IP
+		- 备案
+			  www.pythonav.com    ->   47.104.0.201
+			day06.pythonav.com    ->   82.156.54.134
+			douyin.pythonav.com   ->   82.156.54.134
+
+		A记录 ->  douyin.pythonav.com   ->   82.156.54.134
+
+	3.13 https
+		- 购买证书（免费）
+		- 下载证书（2个证书文件） -> 放到服务器
+		- nginx修改配置
+			- http -> 重定向 -> https
+			- https
+				- 指定证书
+		- nginx重启
+			systemctl restart nginx
+
+	>>>日志 & docker & 用户&用户组&权限等 & 进程 （ Linux基础 ）
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

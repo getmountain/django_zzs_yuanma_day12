@@ -1,0 +1,112 @@
+1.什么是前后端分离？
+  
+  程序角度：
+  	  - 1个django程序，接收请求+处理+HTML模板+用户返回。
+  	  - 2个程序
+  	  	 - 前端：vue.js/react.js/angular.js
+  	  	 - 后端：django + django-restframework
+
+  专业度角度：
+  	  - 前端，专门写前端代码 + 部署 + 版本管理 + ajax请求获取
+  	  - 后端，API
+
+
+  APP或微信小程序：
+  	- 前端：APP或微信小程序
+  	- 后盾：API
+
+
+2.什么是drf？作用是什么？
+	drf，让我们以后写后端API接口时更方便。
+
+	pip install django
+	pip install djangorestframework
+
+
+3.必备工具：postman
+
+
+4.初步编写API
+	- 基于django实现
+	- 基于drf实现
+		- 安装
+		 	pip install djangorestframework
+		- 注册
+			INSTALLED_APPS = [
+			    # 'django.contrib.admin',
+			    # 'django.contrib.auth',
+			    # 'django.contrib.contenttypes',
+			    # 'django.contrib.sessions',
+			    # 'django.contrib.messages',
+			    'django.contrib.staticfiles',
+			    "rest_framework"
+			]
+		- 返回数据 + 嵌套好看的页面
+			- 路由
+				path('login/', views.login)
+
+			- 视图
+				from rest_framework.response import Response
+				from rest_framework.decorators import api_view
+
+				@api_view(["GET"])
+				def login(request):
+				    return Response({'status': True, 'message': "success"})
+
+5.FBV和CBV（django）
+	- 现象
+	- 本质相同
+
+6.CBV ->（drf）-> dispatch
+	- 请求对象和参数
+		django的request对象
+		    request.method
+	        request.GET
+	        request.POST
+	        request.body
+	        request.FILES
+
+	    drf中的request参数，又一层封装
+	    	request._request.GET
+	        request._request.POST
+	        request._request.method
+
+		    class Request:
+		    	def __init__(self,request,....):
+		    		self._request=  request
+		    		self.....
+------------------------------------------------
+
+7.预习笔记
+	...
+
+
+------------------------------------------------
+任务
+	1.项目部署（https以外）
+
+	2.知乎/简书/掘金 平台->系列文章（drf源码剖析）
+		- 忘记了，参考
+		- 面试/工作 -> 基础、装饰器尽量不要写，太简单了。
+		- python底层原理：列表底层原理、垃圾回收机制
+		->简历写上连接。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
